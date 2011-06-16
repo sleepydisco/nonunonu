@@ -1,0 +1,38 @@
+@font-face {
+    font-family: 'Tweedy';
+    src: url('fonts/tweedy-webfont.eot');
+    src: url('fonts/tweedy-webfont.eot?iefix') format('eot'),
+         url('fonts/tweedy-webfont.woff') format('woff'),
+         url('fonts/tweedy-webfont.ttf') format('truetype'),
+         url('fonts/tweedy-webfont.svg#webfontcxIragn9') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Thurston';
+    src: url('fonts/thurston_erc_002-webfont.eot');
+    src: url('fonts/thurston_erc_002-webfont.eot?iefix') format('eot'),
+         url('fonts/thurston_erc_002-webfont.woff') format('woff'),
+         url('fonts/thurston_erc_002-webfont.ttf') format('truetype'),
+         url('fonts/thurston_erc_002-webfont.svg#webfontMYVxqSbV') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+h1 {
+  font-family: Tweedy;
+  font-size: 4em;
+  font-weight: normal;
+  letter-spacing: -0.1em;
+}
+
+#nonunonu_canvas {
+/*  border: 1px solid #000;*/
+}
+
+#nonunonu_canvas:hover {
+  cursor: pointer;
+}
