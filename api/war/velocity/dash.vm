@@ -1,0 +1,8 @@
+Hello! I'm the dashboard. 
+
+#if ($model.isSignedIn)
+  You're signed in! (Cookie: $model.cookie). <a href="/signout">Sign out</a>
+#else
+  <a href="/signin/twitter">Sign in with Twitter</a> | <a href="/signin/facebook">Sign in with Facebook</a> 
+#end
+
