@@ -432,6 +432,16 @@ function onClick(e) {
 	gGame.checkState();
 }
 
+function getCellX(e) {
+  var parent = e.target.parentElement;
+  return e.pageX - parent.offsetLeft + parent.scrollLeft;  
+}
+
+function getCellY(e) {
+  var parent = e.target.parentElement;
+  return e.pageY - parent.offsetTop + parent.scrollTop;  
+}
+
 function mouseDown(e) {
 	// Start tracking mouse
 	window.onmousemove = mouseMoved;
@@ -440,18 +450,14 @@ function mouseDown(e) {
 		window.onmousemove = null;
 		window.onmouseup = null;
 	}
-	var cellX = e.pageX - e.target.offsetLeft;
-	var cellY = e.pageY - e.target.offsetTop;
-	var x = gView.getCellX(cellX);
-	var y = gView.getCellY(cellY);		
+	var x = gView.getCellX(getCellX(e));
+	var y = gView.getCellY(getCellY(e));		
 	gGame.toggleCell(x, y);
 }
 
 function mouseMoved(e) {
-	var cellX = e.pageX - e.target.offsetLeft;
-	var cellY = e.pageY - e.target.offsetTop;
-	var x = gView.getCellX(cellX);
-	var y = gView.getCellY(cellY);		
+	var x = gView.getCellX(getCellX(e));
+	var y = gView.getCellY(getCellY(e));		
 	gGame.turnOn(x, y);
 	gView.drawGrid(gGame);
 }
@@ -459,13 +465,13 @@ function mouseMoved(e) {
 function initEditor() {
 	NNGridEditor.prototype = new NNGrid();
 	gGame = new NNGridEditor();
-	gGame.initGrid(15,15);
+	gGame.initGrid(32,32);
 	
 	var cfg = new NNViewConfig();
 	cfg.pxCellWidth = 16;
 	cfg.pxCellHeight = 16;
 	cfg.pxFontWidth = 8;
-	cfg.pxFontHeight = 10;		
+	cfg.pxFontHeight = 12;		
 	
 	gView = new NNGridView($('nonunonu_grid'), cfg);
 	/* Set the initial state of the view */
@@ -484,5 +490,13 @@ function initEditor() {
 		
 window.addEvent('domready', function() { 
     //initGame();
-    initEditor();
+    initEditor();    
+    $('nonunonu_grid').onselectstart = function() {
+      $('nonunonu_grid').style.cursor = 'pointer';
+      return false;
+    }
+    $('nonunonu_grid').onmouseup = function() {
+      $('nonunonu_grid').style.cursor = 'pointer';
+      return false;
+    }
 });

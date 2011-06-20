@@ -29,10 +29,40 @@ h1 {
   letter-spacing: -0.1em;
 }
 
-#nonunonu_canvas {
-/*  border: 1px solid #000;*/
+#canvas_wrapper {
+  width: 500px;
+  height: 500px;
 }
 
-#nonunonu_canvas:hover {
+/* Wraps the canvas elements  */
+/* This will be the element whose position will move on scroll */
+#nonunonu_wrapper {
+  width: 500px;
+  height: 500px;
+  overflow: hidden;
+  position: relative;
+  left: 0px;
+  top: 0px;
+}
+
+/* Canvas for the digits */
+#nonunonu_digits {
+  width: 600px;
+  height: 600px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 1;
+}
+
+/* Canvas for the grid */
+#nonunonu_grid {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 0;
+}
+
+#nonunonu_grid:hover {
   cursor: pointer;
 }
