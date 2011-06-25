@@ -122,6 +122,10 @@ function NNGridEditor() {
 			this.resetGrid(this.grid);
 		}
 	}
+	
+	this.encodedValue = function() {
+	  return this.gridEncoder.encode(this.grid);
+	}
 }
 
 function ArrayCellFactory() {
@@ -366,26 +370,31 @@ function NNGridView(el, cfg) {
 var gGame;
 var gView;
 
+function invader() {
+  var data = "0000000000000001000000000000000000000000000000101000000000000000000000000000000100000000000000000000000000000111110000000000000000000000000010000010000000000000000000000001010001010000000000000000000000101010101010000000000000000000011010101010110000000000000000001010011011001010000000000000000010010000000100100000000000000000110011111110011000000000000000010010000000001001000000000000001010010000000100101000000000000101000100000001000101000000000010101001000000010010101000000001010100010010100100010101000000101010100100111001001010101000010101001001000100010010010101001000100010010000000100100010001010001000100011111110001000100010100100001000000000000010000100100110000010000000000000100000110000000000010000000000010000000000000000000011111111111000000000000000000000000000000000000000000000000000001111000111100000000000000000000000000000000000000000000000000000111100011110000000000000000000001111000111100000000000000000001111110001111110000000000000000101111100011111010000000000000001111111000111111100000000";
+  return data;
+}
+
+function bear() {
+  var data = "000011111000011111000010000010010000010010000001010000001001000000111000000101000000000000000011000000000000000001100000000000000000110011000001100000011010110001011000001101111010111100000110011001001100000011000001010000000001100000000000000000110000000000000000011000000000010000001100100000001001000110010000000100100011001000000010010001011000000000110000101000000000000000010100000011000000010010000001100000010001010101010101010000011111000111110000";
+  return data;
+}
+
 function initGame() {
 	NNGame.prototype = new NNGrid();
 	gGame = new NNGame();
-  // var data = [
-  // [0,0,1,1,1,1,0,0],
-  // [0,1,0,0,0,0,1,0],
-  // [1,0,0,0,0,0,0,1],
-  // [1,0,1,0,0,1,0,1],
-  // [1,0,0,0,0,0,0,1],
-  // [0,1,0,0,0,0,1,0],
-  // [0,0,1,0,0,1,0,0],
-  // [0,0,0,1,1,0,0,0]
-  // ];
-  var data = [
-    [0,1,0,1,0],
-    [1,0,1,0,1],
-    [0,1,0,1,0],
-    [0,0,1,0,0]
-  ];
-	gGame.initGridFromArray(data);
+  
+  //   var data = [
+  //     [0,1,0,1,0],
+  //     [1,0,1,0,1],
+  //     [0,1,0,1,0],
+  //     [0,0,1,0,0]
+  //   ];
+  // gGame.initGridFromArray(data);
+
+  // gGame.initGrid(invader(), 32, 32);
+  gGame.initGrid(bear(), 19, 24);
+	
 	gGame.initSelected();
 	
 	var cfg = new NNViewConfig();
@@ -410,8 +419,8 @@ function initEditor() {
 	gGame.initGrid(32,32);
 	
 	var cfg = new NNViewConfig();
-	cfg.pxCellWidth = 16;
-	cfg.pxCellHeight = 16;
+	cfg.pxCellWidth = 12;
+	cfg.pxCellHeight = 12;
 	cfg.pxFontWidth = 8;
 	cfg.pxFontHeight = 12;		
 	
@@ -537,7 +546,10 @@ function gridOnMouseMoved(e) {
 }
 
 function gridOnMouseUp(e) {
-	gView.drawGrid(gGame);	
+	gView.drawGrid(gGame);
+	
+	$('encoded_value').set('text', gGame.encodedValue());
+		
   stopTrackingMouseMovements();
 }
 
@@ -550,6 +562,30 @@ function setPointerCursor() {
 		
 window.addEvent('domready', function() { 
     initGame();
-    //initEditor();    
+    // initEditor();    
     $('nonunonu_grid').addEvent('selectstart', setPointerCursor);
 });
+
+/*
+Grid:
+{
+	id:			'unique identifier',
+	creator_user_id:	'who created it', // reference 
+	title: 			'name of grid',
+	credits:		'some info about the image',
+	width:			'width',
+	height:			'height',
+	data:			'grid data encoded',
+	encoding:		'grid encoder version',
+	palatte:		'colour palatte for the grid'
+	
+	1bit:  1 color            1 on, 0 off
+	2bits: 3 colors           1-3 on, 0 off
+	4bits: 7 colors           1-7 on, 0 off
+	
+	palattes of 1, 2, 7, 15 colors
+	
+	
+	
+}
+*/
