@@ -31,9 +31,9 @@ function GridEncoder(cellFactory) {
 			// Get the next encoded character
       // var charCode = data.charCodeAt(i);
       var chunk = data.substring(i, i + 4);
-      console.log("Chunk: " + chunk);
+      // console.log("Chunk: " + chunk);
 			var charCode = parseInt("0x" + chunk)
-			console.log("code: " + charCode);
+      // console.log("code: " + charCode);
 			
 			// Iterate the bits of the encoding
 			for (var j = 0; j < 16 && len-- > 0; j += bitLength) {
@@ -85,13 +85,13 @@ function GridEncoder(cellFactory) {
 				charCode <<= bitLength;
 				charCode |= value;
         if (bitCount == 16) {
-          console.log("CharCode: " + charCode);          
+          // console.log("CharCode: " + charCode);          
           var chunk = Number(charCode).toString(16);
           while (chunk.length < 4) {
             chunk = "0" + chunk;
           }          
           data += chunk;
-          console.log("Data: " + data);
+          // console.log("Data: " + data);
           // data += String.fromCharCode(charCode);
           // console.log(data);
           bitCount = 0;
@@ -110,7 +110,7 @@ function GridEncoder(cellFactory) {
       // data += String.fromCharCode(charCode);
       // data += charCode.toString(16);
 		}
-    console.log("Final encoded: " + data);
+    // console.log("Final encoded: " + data);
 		return data;
 	}
 	

@@ -1,8 +1,8 @@
 function NNCell(value) {
 	this.value = value;	
-	this.toggle = function() {
+	this.toggle = function(newValue) {
 		if (this.value === 0) {
-			this.value = 1;
+			this.value = newValue;
 		} else {
 			this.value = 0;
 		}
@@ -61,11 +61,11 @@ function NNGrid() {
 		this.height = this.grid.length;
 	}
 	
-	this.toggleCell = function(x, y) {
+	this.toggleCell = function(x, y, value) {
 		if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
 			var drawable = this.getDrawableGrid();
 			var cell = drawable[y][x];
-			cell.toggle();
+			cell.toggle(value);
 		} else {
 			// console.log("Can't toggle cell for: (x,y: " + x + "," + y + ")");
 		}
@@ -250,7 +250,6 @@ function NNGridView(el, cfg) {
 		
 	this.drawSelectedPixels = function(context, grid) {
 		/* draw 'pixels' */
-		context.fillStyle = "#333";
 		for (var i = 0; i < grid.length; i++) {
 			var row = grid[i];
 			var y = i * this.cfg.pxCellHeight + this.state.gridY;
@@ -261,7 +260,9 @@ function NNGridView(el, cfg) {
 				if (cell == undefined) {
 					alert(i +" " +j);
 				}
-				if (cell.value == 1) {
+				if (cell.value > 0) {
+				  console.log(cell.value);
+      		context.fillStyle = "#" + PALATTE.swatch_colors[cell.value - 1];
 					context.fillRect(x + 1, y + 1, this.cfg.pxCellWidth - 1, this.cfg.pxCellHeight - 1);        
 				}      
 			}
@@ -272,17 +273,20 @@ function NNGridView(el, cfg) {
 		/* Set up font */
 		context.font = "normal 10px sans-serif";
 		context.textBaseline = "top";
-		context.fillStyle = "#333";
 		
 		/* Draw numbers left/right of the grid */
 		var rows = this.getRowData(grid);
 		for (var i = 0; i < rows.length; i++) {
 			var y = i * this.cfg.pxCellHeight + this.state.pxDigitsHeight;
 			for (var j = 0; j < rows[i].length; j++) {
+    		var count = rows[i][j].count;
+    		var hex = "#" + PALATTE.swatch_colors[rows[i][j].value - 1];
+    		context.fillStyle = hex;
+    		
 				var x1 = this.state.pxDigitsWidth - (this.cfg.pxFontWidth * rows[i].length) + (this.cfg.pxFontWidth * j);
-				context.fillText(rows[i][j], x1, y);	
+				context.fillText(count, x1, y);	
 				var x2 = this.state.pxGridWidth + this.state.pxDigitsWidth + (this.cfg.pxFontWidth * j);
-				context.fillText(rows[i][j], x2, y);	
+				context.fillText(count, x2, y);	
 			}
 		}
 	
@@ -292,32 +296,48 @@ function NNGridView(el, cfg) {
 			var x = this.state.pxDigitsWidth + (this.cfg.pxCellWidth * i) + 5;		
 			for (var j = 0; j < cols[i].length; j++) {
 				var y1 = this.state.pxDigitsHeight - (this.cfg.pxFontHeight * cols[i].length) + (this.cfg.pxFontHeight * j);
-				context.fillText(cols[i][j], x, y1);	
+				context.fillText(cols[i][j].count, x, y1);	
 				var y2 = this.state.pxDigitsHeight + (j * this.cfg.pxFontHeight) + this.state.pxGridHeight;
-				context.fillText(cols[i][j], x, y2);	
+				context.fillText(cols[i][j].count, x, y2);	
 			}
 		}	
 	}
+		
+	var PixelCount = function(count, value) {
+	 this.count = count;
+	 this.value = value;
+	 return true;
+  }
 		
 	this.getRowData = function(grid) {
 		var rowData = [];
 		for (var i = 0; i < grid.length; i++) {
 			var row = grid[i];
 			rowData[i] = [];	
-			var count = 0;		
+			var count = new PixelCount(0, 0);		
 			for (var j = 0; j < row.length; j++) {			
 				var cell = grid[i][j];
-				if (cell.value === 1) {
-					count = count + 1;
+				if (j > 0) {
+				  if (cell.value > 0) {
+				    if (cell.value == count.value) {
+				      count.count++;
+				    }
+				    else {
+				      if (count.count > 0) {
+				        rowData[i].push(count);
+			        }
+				      count = new PixelCount(1, cell.value);
+				    }				    
+				  }
 				}
 				if (cell.value === 0) {
-					if (count > 0) {
+					if (count.count > 0) {
 						rowData[i].push(count);
-						count = 0;
+						count = new PixelCount(0, 0);
 					}
 				}
 			}
-			if (count > 0) {
+			if (count.count > 0) {
 				rowData[i].push(count);
 			}
 		}
@@ -328,20 +348,30 @@ function NNGridView(el, cfg) {
 		var colData = [];
 		for (var i = 0; i < grid[0].length; i++) {
 			colData[i]= [];
-			var count = 0;		
+			var count = new PixelCount(0, 0);		
 			for (var j = 0; j < grid.length; j++) {			
 				var cell = grid[j][i];
-				if (cell.value === 1) {
-					count = count + 1;
+				if (i > 0) {
+				  if (cell.value > 0) {
+				    if (cell.value == count.value) {
+				      count.count++;
+				    }
+				    else {
+				      if (count.count > 0) {
+				        colData[i].push(count);
+			        }
+				      count = new PixelCount(1, cell.value);
+				    }
+				  }				  
 				}
-				if (cell.value === 0) {
-					if (count > 0) {
+        if (cell.value === 0) {
+					if (count.count > 0) {
 						colData[i].push(count);
-						count = 0;
+						count = new PixelCount(0, 0);
 					}
-				}
+				}				
 			}
-			if (count > 0) {
+      if (count.count > 0) {
 				colData[i].push(count);
 			}
 		}
@@ -521,12 +551,14 @@ function updateCellFromState(e, state) {
 	if (cellX < 0 || cellY < 0) {
 	  return false;
 	}
+	var value = parseInt(PALATTE.swatch_selected) + 1;
+	console.log("New value:" + value);
 	switch (state) {
 	  case StateChange.TOGGLE: 
-	    gGame.toggleCell(cellX, cellY);
+	    gGame.toggleCell(cellX, cellY, value);
 	    break;
 	  case StateChange.ON:
-  	  gGame.setCellValue(cellX, cellY, 1);
+  	  gGame.setCellValue(cellX, cellY, value);
 	    break;
 	  case StateChange.OFF:
 	    gGame.setCellValue(cellX, cellY, 0);
@@ -552,17 +584,16 @@ function gridOnMouseUp(e) {
 		
   stopTrackingMouseMovements();
 }
-
-
-		
+	
 function setPointerCursor() {
   $('nonunonu_grid').style.cursor = 'pointer';
   return false;
 }		
 		
 window.addEvent('domready', function() { 
-    initGame();
-    // initEditor();    
+    initPalatte();
+    // initGame();
+    initEditor();    
     $('nonunonu_grid').addEvent('selectstart', setPointerCursor);
 });
 

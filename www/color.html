@@ -20,120 +20,17 @@
 	<script type="text/javascript" src="js/mootools-core-1.3.2-full-compat.js"></script>
   <script type="text/javascript">
   
-var PALATTE = {
-  swatch_colors: ['000','f00','0ff'],
-  swatch_selected: 0
-};  
-  
-  function drawSwatch(num, hex) {
-    console.log("Num: " +num);
-    var el = $('swatch_color_' + num);
-    console.log(el);
-    var context = el.getContext("2d");	
-		context.clearRect(0, 0, el.width, el.height);
-		context.fillStyle = "#" + hex;
-		context.fillRect(0, 0, 12, 12);		    
-  }
 
-  function valueChanged(target) {
-    return target.prevValue != target.value;
-  }
-
-  function isValidHex(value) {
-    var regex = /^[0-9a-fA-F]{3}(|[0-9a-fA-F]{3})$/;
-    return value.match(regex) ? true : false;
-  }
-
-  function hexChanged(e) {
-    if (valueChanged(e.target) && isValidHex(e.target.value)) {
-      console.log(e.target.value);      
-       var swatchNum = String(e.target.id).substring("swatch_hex_".length);
-       drawSwatch(swatchNum, e.target.value);
-    }
-    e.target.prevValue = e.target.value;
-  }
-
-  function onSwatchClick(e) {
-    var swatchNum = String(e.target.id).substring("swatch_color_".length);
-    console.log(swatchNum);
-    selectSwatch(swatchNum);
-  }
-
-  function selectSwatch(n) {
-    $('swatch_selected_' + n).checked = true;
-  }
-
-  function createSwatch(n) {
-    var canvasDiv = new Element('div', {
-      'class': 'swatch_color'
-    });
-    
-    var canvas = new Element('canvas',{
-      id: 'swatch_color_' + n,
-      'class': 'swatch_color',
-      width: 12,
-      height: 12,
-      events: {
-        'click': onSwatchClick
-      }
-    });
-    canvasDiv.adopt(canvas);
-    
-    var hexValue = new Element('input', {
-      id: 'swatch_hex_' + n,
-      type: 'text',
-      maxlength: 6,
-      events: {
-        'keyup': hexChanged        
-      }
-    })
-
-    var hexSelected = new Element('input', {
-      type: 'radio',
-      name: 'swatch_selected',
-      id: 'swatch_selected_' + n,
-      value: n
-    });
-
-    var swatch = new Element('div', {
-      id: 'swatch_' + n,      
-    });
-    swatch.adopt(canvasDiv);
-    swatch.adopt(hexValue);
-    swatch.adopt(hexSelected);
-    
-    return swatch;
-  }
 
   window.addEvent('domready', function() {  
-    var nColors = PALATTE.swatch_colors.length;
-    var palatte = $('color_palatte');
-    for (var n = 0; n < nColors; n++) {
-      var swatch = createSwatch(n);
-      palatte.adopt(swatch); 
-      $('swatch_hex_' + n).value = PALATTE.swatch_colors[n];
-      drawSwatch(n, PALATTE.swatch_colors[n]);      
-    }
-    selectSwatch(0);
+    initPalatte();
   });
   </script>
 
 </head>
 <body>
 
-<form>
-<p>Palette</p>
-<div id="color_palatte">
-  <!--
-  <div>
-    <div class="color_swatch">
-      <canvas class="color_swatch" id="color_swatch_0" width="12" height="12" />
-    </div>
-    <input type="text" id="color_hex_0" maxlength="6" />
-  </div>
-  -->
-</div>
-</form>
+
 
 </body>
 </html>		
