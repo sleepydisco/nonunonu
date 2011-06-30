@@ -21,15 +21,163 @@
   <script type="text/javascript">
   
 
+  function hexString(col) {
+    var hex = col.toString(16)    
+    while (hex.length < 3) {
+      hex = "0" + hex;
+    }    
+    return "#" + hex;
+  }
+
+  function getPalatte(keyColor) {    
+    var white = 0xfff;
+    var black = 0x000;
+
+    var greyRange = [];
+    for (var grey = white; grey > black; grey -= (white / 5)) {
+      greyRange.push(grey);
+    }
+
+    var colRange = [];
+    for (var col = keyColor; col > black; col -= (keyColor / 5)) {
+      colRange.push(col);
+    }
+    
+    var colors = [];
+    for (var i = 0; i < 5; i ++) {
+      var steps = 5 - i;
+      var incr = Math.floor((greyRange[i] - colRange[i]) / steps);
+      
+      var range = [];
+      colors.push(range);
+      for (var col = greyRange[i]; col >= colRange[i]; col -= incr) {
+        range.push(hexString(Math.floor(col)));
+      }
+    }
+    colors[0][5] = hexString(keyColor);
+    colors.push([hexString(0)]);
+    // console.log(colors);
+    return colors;
+  }
+
+  var PICKER = {
+    keys: [ 
+      0xf00,0xf30,0xf60,0xf90,0xfc0,  
+      0xff0,0xcf0,0x9f0,0x6f0,0x3f0, 
+      0x0f0,0x0f3,0x0f6,0x0f9,0x0fc,
+      0x0ff,0x0cf,0x09f,0x06f,0x03f,
+      0x00f,0x30f,0x60f,0x90f,0xc0f,
+      0xf0f,0xf0c,0xf09,0xf06,0xf03 
+    ],
+    palatte: []
+  };
+
+  var PX = 
+  {
+    pickerX: 0,
+    pickerWidth: 120,
+    pickerHeight: 120,
+    colorHeight: 20,
+    
+    keyX: 125,
+    keyWidth: 20,
+    keyHeight: 120 / PICKER.keys.length    
+  }
+
+  function initKeyColors() 
+  {
+    var el = $('picker');
+    var ctx = el.getContext("2d");
+
+    ctx.clearRect(PX.keyX, 0, PX.keyWidth, PX.pickerHeight);
+
+    for (var i = 0; i < PICKER.keys.length; i++) 
+    {
+      var y = i * PX.keyHeight;
+      ctx.fillStyle = hexString(PICKER.keys[i]);
+      ctx.fillRect(PX.keyX, y, PX.keyWidth, PX.keyHeight);
+    }
+  }
+
+  function initPicker(keyColor) {
+    var el = $('picker');
+    var ctx = el.getContext("2d");
+    ctx.clearRect(PX.pickerX, 0, PX.pickerWidth, PX.pickerHeight);
+    
+    PICKER.palatte = getPalatte(keyColor);
+    console.log(PICKER.palatte);
+    
+    for (var i = 0; i < PICKER.palatte.length; i++) {
+      var colors = PICKER.palatte[i];
+      // console.log(colors);
+      var pxColorWidth = PX.pickerWidth / colors.length;
+      
+      var y = i * PX.colorHeight;
+      
+      for (var x = 0, j = 0; x < PX.pickerWidth; x += pxColorWidth, j++)
+      {
+        // console.log(x + " " + y + " " + pxColorWidth + " " + pxColorHeight + " " + colors[j]);
+        ctx.fillStyle = colors[j];
+        ctx.fillRect(x, y, pxColorWidth, PX.colorHeight);
+      }
+    }
+  }
+
+  function initSelectedColor(hexKeyColor) {
+    var el = $('picker');
+    var ctx = el.getContext("2d");
+    ctx.clearRect(PX.pickerX, PX.pickerHeight, PX.pickerWidth, el.height);
+    
+    ctx.strokeStyle = '#999';
+    ctx.strokeRect(PX.pickerX + 0.5, PX.pickerHeight + 5.5, 30, 30);
+
+    ctx.fillStyle = hexKeyColor;
+    ctx.fillRect(PX.pickerX + 2.5, PX.pickerHeight + 7.5, 26, 26);
+    
+    ctx.font = "bold 20px sans-serif";
+    ctx.fillStyle = '#333';
+    ctx.fillText(hexKeyColor, PX.pickerX + 36, PX.pickerHeight + 26);
+  }
+
+  function isInsidePicker(x, y) {
+    return x >= 0 && x <= 120 && y >= 0 && y <= 120;
+  }
+
+  function isInsideLegend(x, y) {
+    return x >= 125 && x <= 145 && y >= 0 && y <= 120;
+  }
+
+  function onPickerClick(e) {
+    var x = e.page.x - e.target.offsetLeft;
+    var y = e.page.y - e.target.offsetTop;
+    
+    if (isInsideLegend(x,y)) {      
+      var hex = PICKER.keys[Math.floor( y / PX.keyHeight )];
+      console.log(hexString(hex) + " selected");
+      initPicker(hex);
+      initSelectedColor(hexString(hex));
+    }
+    else if (isInsidePicker(x,y)) {
+      var row = Math.floor(y / PX.colorHeight);
+      row = PICKER.palatte[row];
+      var col = Math.floor(x / (PX.pickerWidth / row.length));
+      var hex = row[col];
+      initSelectedColor(hex);
+    }
+  }
 
   window.addEvent('domready', function() {  
-    initPalatte();
+    initPicker(PICKER.keys[0]);
+    initKeyColors();  
+    initSelectedColor(hexString(PICKER.keys[0]));  
+    $('picker').addEvent('click', onPickerClick);    
   });
   </script>
 
 </head>
 <body>
 
+<canvas id="picker" width="200" height="200" />
 
 
 </body>
