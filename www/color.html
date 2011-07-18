@@ -29,33 +29,112 @@
     return "#" + hex;
   }
 
+  var RGB = function(hex) {
+    var _r = (hex >>> 8) & 0x0f;
+    var _g = (hex >>> 4) & 0x0f;
+    var _b = hex & 0x0f;
+      
+    var inc = function(a, b, n) {
+      return (a == b) ? 0 : (a - b) / n; 
+    }; 
+        
+    return {
+      r: _r, 
+      g: _g, 
+      b: _b,
+      toHex: function() {
+        var hex = _r;
+        hex <<= 4;
+        hex |= _g;
+        hex <<= 4;
+        hex |= _b;
+        hex = hex.toString(16);
+        while (hex.length < 3) {
+          hex = "0" + hex;
+        }    
+        return "#" + hex;
+      },
+      to: function(cmp, n) {
+        // other is a higher valued RGB
+        var _r_inc = inc(cmp.r, _r, n);
+        // console.log("r inc: " + _r_inc);        
+        
+        var _g_inc = inc(cmp.g, _g, n);
+        // console.log("g inc: " + _g_inc);
+        
+        var _b_inc = inc(cmp.b, _b, n);
+        // console.log("b inc: " + _b_inc);
+
+        var values = [];
+        for (var i = 0; i < n; i ++) {
+          var newR = Number(_r + Math.round(_r_inc * i));
+          // console.log("r:" + newR);
+          var newG = Number(_g + Math.round(_g_inc * i));
+          // console.log("g:" + newG);
+          var newB = Number(_b + Math.round(_b_inc * i));
+          // console.log("b:" + newB);
+          
+          _hex = "0x" + newR.toString(16);
+          _hex += newG.toString(16);
+          _hex += newB.toString(16);
+          // console.log(_hex);
+          // "_ + newR.toString(16) +
+          // Number(_g + Math.ceil(_g_inc * i)).toString(16) +
+          // Number(_b + Math.ceil(_b_inc * i)).toString(16) +
+          values.push(RGB(Number(_hex)));
+        }
+        values.push(cmp);
+        
+        return values;
+      }
+    }
+  }
+
+  function display(colors) {
+    var line = '';
+    colors.forEach(function(c){
+      line = line + c.toHex() + " ";
+    });
+    return line;
+  }
+
   function getPalatte(keyColor) {    
-    var white = 0xfff;
-    var black = 0x000;
+    var white = RGB(0xfff);
+    var black = RGB(0x000);
 
-    var greyRange = [];
-    for (var grey = white; grey > black; grey -= (white / 5)) {
-      greyRange.push(grey);
-    }
+    var greyRange = white.to(black, 5);
+    console.log("Greys: " + display(greyRange));
+    
+    // for (var grey = white; grey > black; grey -= (white / 5)) {
+    //   greyRange.push(grey);
+    // }
+    var colRange = keyColor.to(black, 5);
+    console.log("Color (to Black): " + display(colRange));
 
-    var colRange = [];
-    for (var col = keyColor; col > black; col -= (keyColor / 5)) {
-      colRange.push(col);
-    }
+    // var colRange = [];
+    // for (var col = keyColor; col > black; col -= (keyColor / 5)) {
+    //   colRange.push(col);
+    // }
     
     var colors = [];
     for (var i = 0; i < 5; i ++) {
       var steps = 5 - i;
-      var incr = Math.floor((greyRange[i] - colRange[i]) / steps);
       
-      var range = [];
+      var range = greyRange[i].to(colRange[i], steps);
+      console.log(greyRange[i].toHex() + " to " + colRange[i].toHex() + ": " + display(range));
+      // colors.push(greyRange[i].to(colRange[i], steps));
+
+      // var incr = Math.floor((greyRange[i] - colRange[i]) / steps);
+      // 
+      // var range = [];
+      // colors.push(range);
+      // for (var col = greyRange[i]; col >= colRange[i]; col -= incr) {
+      //   range.push(hexString(Math.floor(col)));
+      // }
       colors.push(range);
-      for (var col = greyRange[i]; col >= colRange[i]; col -= incr) {
-        range.push(hexString(Math.floor(col)));
-      }
     }
-    colors[0][5] = hexString(keyColor);
-    colors.push([hexString(0)]);
+    // colors[0][5] = hexString(keyColor);
+    colors.push([RGB(0)]);
     // console.log(colors);
     return colors;
   }
@@ -117,7 +196,8 @@
       for (var x = 0, j = 0; x < PX.pickerWidth; x += pxColorWidth, j++)
       {
         // console.log(x + " " + y + " " + pxColorWidth + " " + pxColorHeight + " " + colors[j]);
-        ctx.fillStyle = colors[j];
+        console.log("color: " + colors[j].toHex());
+        ctx.fillStyle = colors[j].toHex();
         ctx.fillRect(x, y, pxColorWidth, PX.colorHeight);
       }
     }
@@ -129,7 +209,7 @@
     ctx.clearRect(PX.pickerX, PX.pickerHeight, PX.pickerWidth, el.height);
     
     ctx.strokeStyle = '#999';
-    ctx.strokeRect(PX.pickerX + 0.5, PX.pickerHeight + 5.5, 30, 30);
+    ctx.strokeRect(PX.pickerX + 0.5, PX.pickerHeight + 5.5, PX.pickerWidth - 1, 30);
 
     ctx.fillStyle = hexKeyColor;
     ctx.fillRect(PX.pickerX + 2.5, PX.pickerHeight + 7.5, 26, 26);
@@ -154,23 +234,34 @@
     if (isInsideLegend(x,y)) {      
       var hex = PICKER.keys[Math.floor( y / PX.keyHeight )];
       console.log(hexString(hex) + " selected");
-      initPicker(hex);
+      initPicker(RGB(hex));
       initSelectedColor(hexString(hex));
     }
     else if (isInsidePicker(x,y)) {
       var row = Math.floor(y / PX.colorHeight);
       row = PICKER.palatte[row];
       var col = Math.floor(x / (PX.pickerWidth / row.length));
-      var hex = row[col];
-      initSelectedColor(hex);
+      var rgb = row[col];
+      initSelectedColor(rgb.toHex());
     }
   }
 
   window.addEvent('domready', function() {  
-    initPicker(PICKER.keys[0]);
+
+    initPicker(RGB(PICKER.keys[0]));
     initKeyColors();  
     initSelectedColor(hexString(PICKER.keys[0]));  
-    $('picker').addEvent('click', onPickerClick);    
+    $('picker').addEvent('click', onPickerClick);  
+    // 
+    // var rgb = RGB(0xf09);
+    // console.log(rgb.r + " " + rgb.g + " " + rgb.b + " " + rgb.toHex());  
+    //   
+    // var fff = RGB(0xfff);
+    // 
+    // console.log("From: " + rgb.toHex() + " to " + fff.toHex());
+    // rgb.moveTo(fff, 5).forEach(function (x) {
+    //   console.log(x.toHex());
+    // });  
   });
   </script>
 
